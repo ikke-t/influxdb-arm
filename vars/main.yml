@@ -1,0 +1,24 @@
+# mount point to store influxdb database
+mount_src: "{{ nas_ip }}:/mnt/jako/mittarit"
+mount_target: /mnt/mittarit
+
+# directory for influxdb database
+influxdb_dir: /mnt/mittarit/influxdb
+#influxdb_dir: /var/lib/influxdb
+
+# the install package to download
+influxdb_pkg: influxdb-1.2.2_linux_armhf.tar.gz
+
+# the above package checksum
+influxdb_checksum: "md5:cdfbf757a2a7bb0c974b15ea03024760"
+
+# this is the directory inside install pkg:
+influxdb_version: influxdb-1.2.2-1
+
+# conf options for influxdb, the difference to defaults
+influxdb_conf_items:
+    - {section: meta, option: dir, value: "\"{{ influxdb_dir }}/meta\"" }
+    - {section: data, option: dir, value: "\"{{ influxdb_dir }}/data\"" }
+    - {section: data , option: wal-dir, value: "\"{{ influxdb_dir }}/wal\"" }
+    - {section: admin , option: enabled, value: "true" }
+
