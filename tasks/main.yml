@@ -20,27 +20,17 @@
   tags: mount
 
 - name: install influxdb
-  get_url:
-    url: "https://dl.influxdata.com/influxdb/releases/{{ influxdb_pkg }}"
-    dest: "/var/tmp/{{ influxdb_pkg }}"
-    checksum: "{{ influxdb_checksum }}"
+  apt_key:
+    id: 2582E0C5 
+    url: "https://repos.influxdata.com/influxdb.key"
+    state: present
 
-- command: tar -C "{{ item.dest }}" --strip "{{ item.strip }}" -xf "{{ influxdb_pkg }}" "{{ item.files }}"
-  args:
-      chdir: /var/tmp
-  with_items:
-      - { dest: /etc,       strip: 3, files: "./{{ influxdb_version }}/etc/logrotate.d" }
-      - { dest: /usr/local, strip: 3, files: "./{{ influxdb_version }}/usr/bin" }
-      - { dest: /usr/local, strip: 3, files: "./{{ influxdb_version }}/usr/share" }
-      - { dest: /var,       strip: 3, files: "./{{ influxdb_version }}/var/lib" }
-      - { dest: /var,       strip: 3, files: "./{{ influxdb_version }}/var/log" }
+- apt_repository:
+    repo: deb https://repos.influxdata.com/debian jessie stable
+    state: present
+    filename: 'influxdb'
 
-- command: tar -C "{{ item.dest }}" --strip "{{ item.strip }}" -xf "{{ influxdb_pkg }}" "{{ item.files }}"
-  args:
-      chdir: /var/tmp
-      creates: /etc/influxdb/influxdb.conf
-  with_items:
-      - { dest: /etc,  strip: 3, files: "./{{ influxdb_version }}/etc/influxdb" }
+- apt: name=influxdb state=latest 
 
 - ini_file:
     dest: /etc/influxdb/influxdb.conf
@@ -49,29 +39,6 @@
     value: "{{ item.value }}"
   with_items: "{{ influxdb_conf_items }}"
   notify: restart influxdb
-
-- copy:
-    src: influxdb.service
-    dest: /etc/systemd/system/
-
-- group:
-    name: influxdb
-    system: yes
-
-- user:
-    name: influxdb
-    group: influxdb
-    home: /var/lib/influxdb
-    system: yes
-
-- file:
-    dest: "{{ item }}"
-    owner: influxdb
-    group: influxdb
-    state: directory
-  with_items:
-      - /var/lib/influxdb
-        #- "{{ influxdb_dir }}"
 
 - name: ensure influxdb is running
   systemd:
